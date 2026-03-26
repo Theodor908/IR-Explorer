@@ -1,0 +1,36 @@
+id: 01_tokenization
+title: "Tokenization"
+objective: "Understand how raw text is split into searchable tokens"
+prerequisites: []
+corpus: default
+steps:
+  - type: theory
+    title: "What is Tokenization?"
+    content: |
+      Tokenization is the first and most fundamental step in any text processing pipeline. It converts a raw string of text into a list of individual tokens — usually words.
+
+      This seems simple, but the decisions you make about tokenization directly affect what your search engine can and cannot find:
+
+      Case folding: We lowercase all text so that "Universe", "universe", and "UNIVERSE" are treated as the same token. This improves recall (finding more matches) but can lose distinctions — "US" (country) vs "us" (pronoun).
+
+      Punctuation handling: Our tokenizer uses the regex pattern [a-z0-9]+ which strips all non-alphanumeric characters. This means "don't" becomes two tokens ("don" and "t"), and "U.S.A." becomes three tokens ("u", "s", "a"). Compound terms like "New York" are split into separate tokens.
+
+      Numbers: We keep numeric tokens (like "1957" or "100"), which is important for scientific text where years, measurements, and constants carry meaning.
+
+      The trade-off is between aggressive tokenization (splitting everything, maximizing recall) and conservative tokenization (keeping compounds and special forms, maximizing precision). Most IR systems start with aggressive tokenization and add special handling for known patterns.
+
+  - type: demo
+    title: "Watch Tokenization in Action"
+    action: tokenize_doc
+    highlight: [d1]
+    narration: "Watch as document d1 is tokenized. Each word in the raw text is lowercased and split on non-alphanumeric boundaries. Notice how punctuation disappears and everything becomes lowercase."
+
+  - type: experiment
+    title: "Explore Token Counts"
+    prompt: "Look at the token counts for different documents. Which document has the most tokens? Why might longer documents affect search results? Hint: longer documents contain more unique terms, making them more likely to match any query — this is the 'document length bias' problem."
+    widget: toggle_stopwords
+    observe: [vocab_size, postings_count]
+
+  - type: checkpoint
+    question: "If a document contains 'U.S.A.' and our tokenizer splits on non-alphanumeric characters, what tokens are produced?"
+    reveal: "Three tokens: 'u', 's', 'a' — the periods are removed and letters are lowercased. This shows why tokenization choices matter: we lose the meaningful abbreviation 'USA'. A more sophisticated tokenizer might recognize this pattern and keep it as a single token."

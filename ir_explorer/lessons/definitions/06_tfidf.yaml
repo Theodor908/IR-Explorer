@@ -1,0 +1,34 @@
+id: 06_tfidf
+title: "TF-IDF & Vector Space Model"
+objective: "Understand how TF-IDF weighting and cosine similarity enable ranked retrieval"
+prerequisites: [05_boolean_retrieval]
+corpus: default
+steps:
+  - type: theory
+    title: "From Boolean to Ranked Retrieval"
+    content: |
+      TF-IDF (Term Frequency — Inverse Document Frequency) is a weighting scheme that captures how important a term is to a document within a collection. It combines two intuitions:
+
+      Term Frequency (TF) captures local importance. A term mentioned 5 times in a document is more relevant to that document than one mentioned once. Raw TF can be dampened with logarithmic scaling: tf(t,d) = 1 + log(freq) — this prevents a document mentioning "inflation" 100 times from being scored 100x higher than one mentioning it 10 times.
+
+      Inverse Document Frequency (IDF) captures discriminative power across the collection. A term appearing in 1 out of 13 documents (IDF = log(13/1) = 2.56) is far more informative than one appearing in 12 out of 13 (IDF = log(13/12) = 0.08). Common terms that appear everywhere get near-zero IDF weight.
+
+      The Vector Space Model represents documents and queries as vectors in a high-dimensional space, where each dimension corresponds to a term. The TF-IDF weight of each term becomes the coordinate value. Cosine similarity then measures relevance as the angle between the query vector and each document vector. Documents pointing in a similar direction to the query — sharing important terms with similar emphasis — score highest.
+
+      Unlike Boolean retrieval, this model returns a relevance score for every document, enabling ranked results where the most relevant documents appear first.
+
+  - type: demo
+    title: "Watch TF-IDF Scoring"
+    action: tfidf_search
+    highlight: [d1, d6]
+    narration: "Watch as each document is scored against the query 'eternal inflation'. First, the IDF values for query terms are computed. Then each document gets a cosine similarity score based on its TF-IDF vector. The bars show relative scores — longer bars mean higher relevance."
+
+  - type: experiment
+    title: "Compare Weighting Schemes"
+    prompt: "In Explore mode, use the Search tab with TF-IDF mode. Try the same query with different TF schemes (raw, log, boolean) and IDF schemes (standard, smoothed). How do the rankings change? Log TF is usually better because it dampens the effect of very high term frequencies."
+    widget: select_tf_scheme
+    observe: [top_scores]
+
+  - type: checkpoint
+    question: "A term appears in 1 out of 13 documents. Another appears in 12 out of 13. Which has higher IDF and why?"
+    reveal: "The rare term (1/13) has much higher IDF. IDF = log(13/1) = 2.56 vs log(13/12) = 0.08. The rare term is 32 times more discriminative — it actually distinguishes the one document that contains it from the rest. The common term appears almost everywhere and tells us almost nothing about any specific document."

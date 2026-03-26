@@ -1,0 +1,36 @@
+id: 08_crawling
+title: "Web Crawling"
+objective: "Understand how crawlers discover web pages using BFS and DFS traversal"
+prerequisites: [07_topk_evaluation]
+corpus: default
+steps:
+  - type: theory
+    title: "How Web Crawlers Work"
+    content: |
+      A web crawler (also called a spider) is a program that systematically discovers and downloads web pages by following hyperlinks. It is the first step in building a search engine — you must find the pages before you can index them.
+
+      The crawler starts from a set of seed URLs and maintains a frontier — a data structure holding URLs waiting to be visited. The choice of data structure determines the crawl strategy:
+
+      BFS (Breadth-First Search) uses a queue (FIFO). It visits all pages one link away from the seeds, then all pages two links away, and so on. BFS is preferred for web crawling because it discovers important pages quickly (highly linked pages are found early), spreads requests across many servers (polite crawling), and provides good coverage of the web's breadth.
+
+      DFS (Depth-First Search) uses a stack (LIFO). It follows one link path as deep as possible before backtracking. DFS can get trapped in deep site structures — imagine following an infinite chain of "next page" links. It is rarely used for general web crawling.
+
+      Politeness is a critical concern. Sending too many requests to the same server in a short time is considered aggressive and may be treated as a denial-of-service attack. Polite crawlers enforce delays between requests to the same host. BFS naturally provides politeness because it alternates between different sites at each level.
+
+      The frontier is the core data structure. Real crawlers use priority queues that balance freshness, importance, and politeness constraints.
+
+  - type: demo
+    title: "Watch BFS Crawling"
+    action: run_crawl
+    highlight: [d1]
+    narration: "Watch as BFS crawls the document link graph starting from d1. Blue = currently visiting, green = already visited, yellow = in the frontier (waiting to be visited), gray = not yet discovered. Notice how BFS visits nodes level by level."
+
+  - type: experiment
+    title: "Compare BFS and DFS"
+    prompt: "In Explore mode, go to the Crawler tab. Build the graph, then try BFS and DFS from the same seed node. Compare the visitation order. Notice how BFS spreads out evenly while DFS dives deep into one path first."
+    widget: select_crawl_strategy
+    observe: [vocab_size]
+
+  - type: checkpoint
+    question: "Starting BFS from node A with edges A->B, A->C, B->D. In what order are the nodes visited?"
+    reveal: "A, B, C, D. BFS visits all neighbors of A first (B and C in queue order), then processes B's neighbors (D). If this were DFS, the order would be A, C, B, D (or A, B, D, C depending on neighbor ordering) — DFS would go deep before wide."

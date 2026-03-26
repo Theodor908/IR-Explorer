@@ -1,0 +1,36 @@
+id: 07_topk_evaluation
+title: "Top-k Retrieval & Evaluation Metrics"
+objective: "Learn how retrieval quality is measured with precision, recall, and MAP"
+prerequisites: [06_tfidf]
+corpus: default
+steps:
+  - type: theory
+    title: "Measuring Search Quality"
+    content: |
+      How do we know if a search engine is good? We need quantitative metrics that capture how well the system retrieves relevant documents.
+
+      Precision measures exactness: what fraction of the returned results are actually relevant? If you search and get 10 results, 4 of which are relevant, precision = 4/10 = 0.4.
+
+      Recall measures completeness: what fraction of ALL relevant documents in the collection did we find? If there are 6 relevant documents total and we retrieved 4 of them, recall = 4/6 = 0.67.
+
+      There is a fundamental trade-off: returning more documents increases recall (you find more relevant ones) but typically decreases precision (you also include more irrelevant ones). Precision@k and Recall@k measure these at a specific cutoff — how good are just the top k results?
+
+      Average Precision (AP) captures ranking quality in a single number. It computes precision at each position where a relevant document appears, then averages. This rewards systems that place relevant documents near the top. A system that puts all relevant documents in positions 1-4 scores much higher than one that puts them in positions 7-10, even if both retrieve the same documents.
+
+      Mean Average Precision (MAP) averages AP across multiple queries. It is the standard single-number metric used by the TREC evaluation community to compare retrieval systems.
+
+  - type: demo
+    title: "Watch Evaluation in Action"
+    action: run_evaluation
+    highlight: [d1, d6]
+    narration: "Watch as results for 'eternal inflation' are revealed one by one. Relevant documents (green circles) contribute to the precision-recall curve on the right. Notice how the curve drops when non-relevant documents appear in the ranked list."
+
+  - type: experiment
+    title: "Explore Precision and Recall"
+    prompt: "In Explore mode, go to the Evaluation tab. Run a query, mark which documents you consider relevant, then compute metrics. Try adjusting which documents are relevant and see how P@5, P@10, and AP change. What happens to recall as you increase k?"
+    widget: slider_k
+    observe: [precision_at_k, recall_at_k]
+
+  - type: checkpoint
+    question: "A system returns 10 results. 4 are relevant, at positions 1, 3, 7, and 10. What is Precision@5?"
+    reveal: "P@5 = 2/5 = 0.4. Only positions 1 and 3 are relevant within the top 5 results. Positions 7 and 10 are relevant but outside the top-5 cutoff. This shows why ranking matters — the same 4 relevant documents would give P@5 = 4/5 = 0.8 if they were all in the top 5."

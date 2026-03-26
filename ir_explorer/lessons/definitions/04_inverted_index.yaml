@@ -1,0 +1,36 @@
+id: 04_inverted_index
+title: "Building an Inverted Index"
+objective: "Understand how documents become searchable through an inverted index"
+prerequisites: [03_stemming]
+corpus: default
+steps:
+  - type: theory
+    title: "What is an Inverted Index?"
+    content: |
+      An inverted index is like the index at the back of a textbook: it maps each term to the list of pages (documents) that contain it. This "postings list" allows instant lookup of which documents match a search term.
+
+      The structure has two parts:
+      1. The dictionary — a sorted list of all unique terms in the collection. This enables fast lookup (binary search or hash) to find any term.
+      2. The postings lists — for each term, a sorted list of document IDs where that term appears. Sorting by document ID enables efficient merge operations for multi-term queries.
+
+      Without an index, you would need to scan every document for every query — a linear scan that becomes impossibly slow for large collections. With an inverted index, query time is proportional to the number of postings, not the number of documents.
+
+      Inverted indexes are the backbone of every modern search engine, from web search to email search to code search. The index is typically smaller than the original text because it eliminates redundancy — each term is stored once in the dictionary regardless of how many times it appears.
+
+      Building the index involves processing each document through the preprocessing pipeline (tokenize, remove stopwords, optionally stem), then adding each resulting term to the dictionary and appending the document ID to that term's postings list.
+
+  - type: demo
+    title: "Watch the Index Build"
+    action: build_index
+    highlight: [d1, d2, d3, d4, d5, d6, d7, d8, d9]
+    narration: "Watch as documents are processed one by one. For each document, tokens are extracted and added to the growing dictionary. New terms appear in green. Each term's postings list grows as more documents are processed."
+
+  - type: experiment
+    title: "Explore the Index"
+    prompt: "Toggle stopwords and stemming, then observe how the index changes. Without stopword removal, common words like 'the' appear in nearly every document's postings list. With stemming, the vocabulary shrinks as word variants collapse. How does this affect the average postings list length?"
+    widget: toggle_stopwords
+    observe: [vocab_size, postings_count]
+
+  - type: checkpoint
+    question: "If a term appears in 12 out of 13 documents, is it useful for search? Why or why not?"
+    reveal: "A term with DF=12 appears in almost every document — it cannot distinguish between documents. This is why IDF (inverse document frequency) gives low weight to common terms. The most useful search terms are those with moderate document frequency: specific enough to be discriminative, but common enough to match some documents."

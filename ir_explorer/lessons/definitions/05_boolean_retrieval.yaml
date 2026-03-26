@@ -1,0 +1,34 @@
+id: 05_boolean_retrieval
+title: "Boolean Retrieval"
+objective: "Learn how AND, OR, NOT operators combine postings lists"
+prerequisites: [04_inverted_index]
+corpus: default
+steps:
+  - type: theory
+    title: "The Boolean Retrieval Model"
+    content: |
+      The Boolean retrieval model treats search queries as logical expressions over terms, using the operators AND, OR, and NOT. It is the simplest and oldest retrieval model, dating back to the earliest computerized search systems.
+
+      AND (intersection): Returns documents containing ALL query terms. To process "quantum AND inflation", the system retrieves the postings lists for both terms and finds their intersection — documents appearing in both lists. With sorted postings, this is a merge operation running in O(n+m) time, where n and m are the list lengths.
+
+      OR (union): Returns documents containing ANY query term. The system takes the union of postings lists. This always returns more results than AND.
+
+      NOT (difference): Excludes documents containing a term. "quantum AND NOT decoherence" returns documents with "quantum" that do not contain "decoherence". This is set difference.
+
+      The Boolean model has a key limitation: results are unranked. A document either matches the query or it does not — there is no concept of "more relevant" or "partial match". A document containing all query terms ten times each is treated identically to one containing each term once. This limitation motivated the development of ranked retrieval models like TF-IDF.
+
+  - type: demo
+    title: "Watch Boolean AND in Action"
+    action: boolean_search
+    highlight: [d1, d2, d3]
+    narration: "Watch how a Boolean AND query is processed. First the query is parsed into terms. Then the postings list for each term is retrieved from the index. Finally, the lists are merged to find documents appearing in both — the intersection."
+
+  - type: experiment
+    title: "Try Different Operators"
+    prompt: "In Explore mode, try these queries in the Search tab with Boolean mode: 'quantum AND inflation', 'quantum OR inflation', 'quantum AND NOT decoherence'. How does the result set size change with each operator? AND gives the fewest results, OR the most."
+    widget: toggle_stopwords
+    observe: [vocab_size, postings_count]
+
+  - type: checkpoint
+    question: "Term A appears in documents {d1, d3, d5}. Term B appears in {d3, d5, d7}. What does 'A AND B' return?"
+    reveal: "The intersection: {d3, d5}. These are the only documents containing both terms. The merge algorithm walks both sorted lists simultaneously, outputting document IDs that appear in both."

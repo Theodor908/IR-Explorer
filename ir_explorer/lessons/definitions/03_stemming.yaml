@@ -1,0 +1,34 @@
+id: 03_stemming
+title: "Stemming"
+objective: "Understand how stemming collapses word variants to improve recall"
+prerequisites: [02_stopwords]
+corpus: default
+steps:
+  - type: theory
+    title: "What is Stemming?"
+    content: |
+      Stemming reduces words to their root form by stripping suffixes. For example: "running", "runs", and "runner" might all reduce to "run". This means a search for "inflation" will also find documents containing "inflationary" — improving recall.
+
+      There are two main approaches to morphological normalization:
+
+      Stemming is rule-based suffix stripping. It is fast and aggressive — it applies mechanical rules without understanding word meaning. The Porter stemmer (1980) is the classic algorithm, applying a cascade of rules like removing "-ing", "-tion", "-ness" etc. Our toy stemmer uses a similar longest-match suffix stripping approach.
+
+      Lemmatization is dictionary-based. It uses vocabulary lookup and morphological analysis to find the proper base form ("lemma"). It is slower but more accurate — it knows that "better" maps to "good" and that "ran" maps to "run", which no suffix stripper can handle.
+
+      The key trade-off is over-stemming vs. under-stemming. Over-stemming merges unrelated words: "universe" and "university" might both stem to "univers". Under-stemming fails to merge variants: "organize" and "organisation" might not be recognized as related. Most IR systems accept some over-stemming because the recall benefit outweighs the precision cost.
+
+  - type: demo
+    title: "Watch Stemming Work"
+    action: apply_stemming
+    highlight: [d1, d6]
+    narration: "Watch as each token is stemmed by stripping suffixes. The red portion of each word is the suffix being removed. Notice how 'universes' becomes 'univer', 'inflationary' becomes 'inflat', and multiple variants collapse to the same stem."
+
+  - type: experiment
+    title: "Stemming Impact on Vocabulary"
+    prompt: "Toggle stemming on and off. How much does the vocabulary shrink? Can you find examples where stemming merged words that should not be merged? Try looking for words that share a stem but have different meanings."
+    widget: toggle_stemming
+    observe: [vocab_size, unique_terms]
+
+  - type: checkpoint
+    question: "Our stemmer strips 'ing' from 'string'. Is 'str' a good stem for 'string'? What does this tell us about rule-based stemmers?"
+    reveal: "No — 'str' is not meaningful, and 'string' is not a verb form of anything. Rule-based stemmers apply suffix rules mechanically without understanding word meaning. This is a classic over-stemming error. The Porter stemmer has minimum-length guards to reduce such errors, but they cannot be fully eliminated without a dictionary."

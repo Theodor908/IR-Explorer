@@ -1,0 +1,34 @@
+id: 02_stopwords
+title: "Stopword Removal"
+objective: "Learn why and how common words are filtered from the index"
+prerequisites: [01_tokenization]
+corpus: default
+steps:
+  - type: theory
+    title: "What are Stopwords?"
+    content: |
+      Stopwords are extremely common words like "the", "is", "and", "of" that appear in nearly every document. Because they appear everywhere, they carry almost no information about what a document is actually about.
+
+      Removing stopwords serves two purposes:
+      1. It shrinks the index — typically 40-50% of all tokens in English text are stopwords, so removing them significantly reduces storage and speeds up query processing.
+      2. It improves retrieval quality — without stopwords, the remaining terms are content-bearing words that actually distinguish documents from each other.
+
+      There is no universal stopword list. Lists are language-specific (English stopwords differ from French ones) and domain-specific (the word "cell" might be a stopword in a biology corpus but meaningful in a telecommunications corpus). Our system uses a list of about 80 common English function words.
+
+      The main downside of stopword removal is that it breaks phrase queries. The famous quote "to be or not to be" becomes completely empty after stopword removal — every single word is a stopword. This is why modern search engines often keep stopwords in the index but give them very low weight rather than removing them entirely.
+
+  - type: demo
+    title: "Before and After Stopword Removal"
+    action: remove_stopwords
+    highlight: [d1, d2]
+    narration: "Watch as each token is classified as either a stopword (removed) or a content word (kept). Notice the dramatic reduction in token count — roughly half the tokens are filtered out, leaving only the words that carry topical meaning."
+
+  - type: experiment
+    title: "Toggle Stopwords"
+    prompt: "Turn stopword removal on and off. How does the vocabulary size change? Look at the top-10 most frequent terms with stopwords included — they are all function words like 'the', 'of', 'and'. After removal, the top terms reflect actual topics: 'inflation', 'quantum', 'universe'."
+    widget: toggle_stopwords
+    observe: [vocab_size, postings_count]
+
+  - type: checkpoint
+    question: "Can you think of a query where removing stopwords would change the meaning? Consider the phrase 'to be or not to be'."
+    reveal: "The phrase 'to be or not to be' becomes completely empty after stopword removal — every word is a stopword! This demonstrates the fundamental trade-off: stopword removal helps most queries by focusing on content words, but destroys phrase queries where function words carry meaning."

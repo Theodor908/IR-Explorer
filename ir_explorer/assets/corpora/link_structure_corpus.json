@@ -1,0 +1,25 @@
+{
+  "documents": {
+    "d1": {"title": "Introduction to Search Engines", "source": "Links Corpus", "text": "Search engines are complex systems that retrieve information from the web. They use crawlers to discover pages and indexes to store content for fast retrieval."},
+    "d2": {"title": "Web Crawling Fundamentals", "source": "Links Corpus", "text": "Web crawlers systematically browse the internet following hyperlinks from page to page. Crawling strategies include breadth first and depth first traversal of the link graph."},
+    "d3": {"title": "Indexing Techniques", "source": "Links Corpus", "text": "Inverted indexes map terms to the documents containing them. Index construction involves tokenization and term weighting to enable efficient lookup during query processing."},
+    "d4": {"title": "PageRank Algorithm", "source": "Links Corpus", "text": "PageRank assigns importance scores to web pages based on the link structure of the web. Pages with many incoming links from important pages receive higher scores."},
+    "d5": {"title": "HITS Algorithm", "source": "Links Corpus", "text": "The HITS algorithm identifies hub and authority pages. Authorities are pages with valuable content that many hubs point to. Hubs are pages that link to many good authorities."},
+    "d6": {"title": "Link Analysis Overview", "source": "Links Corpus", "text": "Link analysis uses the hyperlink structure of the web to assess page quality. Both PageRank and HITS are foundational algorithms in web information retrieval."},
+    "d7": {"title": "Query Processing", "source": "Links Corpus", "text": "Query processing involves parsing user queries matching terms against the index and ranking results. Boolean and vector space models are common retrieval frameworks."},
+    "d8": {"title": "Relevance Ranking", "source": "Links Corpus", "text": "Relevance ranking combines content based scores with link based authority signals. Modern search engines blend multiple ranking factors to produce the final result list."},
+    "d9": {"title": "Web Graph Properties", "source": "Links Corpus", "text": "The web graph exhibits power law degree distributions with a few highly connected hub pages. The structure reveals communities and clusters of topically related pages."},
+    "d10": {"title": "Evaluation of Search", "source": "Links Corpus", "text": "Search quality is measured using precision recall and mean average precision. Test collections with relevance judgments enable systematic evaluation of retrieval systems."}
+  },
+  "links": {
+    "d1": ["d2", "d3", "d7"],
+    "d2": ["d3", "d9"],
+    "d3": ["d7"],
+    "d4": ["d6", "d9"],
+    "d5": ["d6", "d9"],
+    "d6": ["d4", "d5", "d1"],
+    "d7": ["d3", "d8"],
+    "d8": ["d4", "d5", "d10"],
+    "d9": ["d2", "d4", "d5"]
+  }
+}

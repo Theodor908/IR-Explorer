@@ -1,0 +1,122 @@
+name: Build Installers
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+          - os: macos-latest
+          - os: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install numpy PyMuPDF pyyaml pyinstaller
+
+      - name: Build with PyInstaller (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          pyinstaller --name "IR Explorer" --windowed --noconfirm --clean
+          --icon ir_explorer/assets/icon.ico
+          --add-data "ir_explorer/assets;ir_explorer/assets"
+          --add-data "ir_explorer/lessons/definitions;ir_explorer/lessons/definitions"
+          --hidden-import ir_explorer.core.evaluation
+          --hidden-import ir_explorer.core.crawler
+          --hidden-import ir_explorer.core.link_analysis
+          --hidden-import ir_explorer.core.corpus_generator
+          --hidden-import ir_explorer.lessons.animations
+          --hidden-import ir_explorer.lessons.engine
+          --hidden-import ir_explorer.lessons.registry
+          --hidden-import yaml
+          ir_explorer/main.py
+
+      - name: Build with PyInstaller (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: >
+          pyinstaller --name "IR Explorer" --windowed --noconfirm --clean
+          --add-data "ir_explorer/assets:ir_explorer/assets"
+          --add-data "ir_explorer/lessons/definitions:ir_explorer/lessons/definitions"
+          --hidden-import ir_explorer.core.evaluation
+          --hidden-import ir_explorer.core.crawler
+          --hidden-import ir_explorer.core.link_analysis
+          --hidden-import ir_explorer.core.corpus_generator
+          --hidden-import ir_explorer.lessons.animations
+          --hidden-import ir_explorer.lessons.engine
+          --hidden-import ir_explorer.lessons.registry
+          --hidden-import yaml
+          ir_explorer/main.py
+
+      - name: Build Windows Installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install innosetup -y
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Package macOS App
+        if: runner.os == 'macOS'
+        run: |
+          cd dist
+          zip -r "../IR_Explorer.app.zip" "IR Explorer.app"
+
+      - name: Package Linux App
+        if: runner.os == 'Linux'
+        run: |
+          cd dist
+          tar czf "../IR_Explorer_Linux.tar.gz" "IR Explorer"
+
+      - name: Upload Windows Installer
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: installer_output/IR_Explorer_Setup.exe
+          if-no-files-found: error
+
+      - name: Upload macOS App
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-app
+          path: IR_Explorer.app.zip
+          if-no-files-found: error
+
+      - name: Upload Linux App
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-app
+          path: IR_Explorer_Linux.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            windows-installer/IR_Explorer_Setup.exe
+            macos-app/IR_Explorer.app.zip
+            linux-app/IR_Explorer_Linux.tar.gz
+          generate_release_notes: true

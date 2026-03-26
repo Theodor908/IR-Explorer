@@ -1,0 +1,34 @@
+id: 09_link_analysis
+title: "Link Analysis (PageRank & HITS)"
+objective: "Learn how link structure reveals page importance through PageRank and HITS"
+prerequisites: [08_crawling]
+corpus: default
+steps:
+  - type: theory
+    title: "Using Links to Rank Pages"
+    content: |
+      The web's hyperlink structure contains valuable information about page importance. Two foundational algorithms exploit this: PageRank and HITS.
+
+      PageRank, developed by Larry Page and Sergey Brin at Stanford, models a "random surfer" who clicks links randomly. A page's importance equals the sum of importance passed from pages linking to it, divided by their out-degree (number of outgoing links). The damping factor d (typically 0.85) means the surfer has an 85% chance of following a link and a 15% chance of jumping to a completely random page. This random jump prevents the surfer from getting stuck in loops and ensures every page receives at least a small score.
+
+      The algorithm iterates: start with equal scores for all pages, then repeatedly update each page's score based on its incoming links. After enough iterations, scores converge to stable values. PageRank is query-independent — it is computed once for the entire web graph.
+
+      HITS (Hypertext-Induced Topic Search) distinguishes two roles that pages play. Authorities are pages with valuable content — they are linked to by many pages. Hubs are pages that curate links to good authorities — like a directory or reading list. Authority score = sum of hub scores of pages pointing to it. Hub score = sum of authority scores it points to. HITS is query-dependent: it runs on a subgraph of pages related to the query.
+
+      Both algorithms iterate until convergence, with scores stabilizing after 10-20 iterations. They are complementary: PageRank gives a global importance measure, while HITS identifies the best content (authorities) and best curators (hubs) for a specific topic.
+
+  - type: demo
+    title: "Watch PageRank Converge"
+    action: run_pagerank
+    highlight: [d1]
+    narration: "Watch PageRank scores evolve over 10 iterations. Each bar represents a document's importance score. In early iterations, scores shift dramatically. By later iterations, changes become tiny — the algorithm is converging. The highest bar indicates the most 'important' document in the link graph."
+
+  - type: experiment
+    title: "Experiment with Damping Factor"
+    prompt: "In Explore mode, go to the Link Analysis tab. Try different damping factors (0.5, 0.85, 0.95). With low damping, the random surfer teleports often, making scores more uniform. With high damping, link structure matters more, creating bigger score differences between pages."
+    widget: slider_damping
+    observe: [convergence_delta]
+
+  - type: checkpoint
+    question: "A node X has no incoming links at all. What is its PageRank? Does it become zero?"
+    reveal: "No, it does not become zero! With damping factor d=0.85 and N=13 pages, every page receives a minimum score of (1-d)/N = 0.15/13 = 0.012 from the random jump component. Even a page with no incoming links gets visited when the random surfer teleports. This is exactly why the damping factor exists — it prevents isolated pages from having zero score."
