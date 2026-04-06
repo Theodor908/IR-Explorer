@@ -239,6 +239,9 @@ class ImportPanel(ttk.Frame):
         lb.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+        # Sort so that academic_papers comes first
+        files.sort(key=lambda f: (0 if f.startswith("academic") else 1, f))
+
         display_names = []
         for f in files:
             name = f.replace("_corpus.json", "").replace("_", " ").title()
@@ -246,6 +249,10 @@ class ImportPanel(ttk.Frame):
             lb.insert("end", name)
 
         descriptions = {
+            "Academic Papers": "80 documents from 15 landmark papers across 7 domains: AI, physics, "
+                               "biology, climate science, information theory, neuroscience, and philosophy. "
+                               "Includes 12 predefined evaluation queries with ground-truth relevance — "
+                               "use the Evaluation tab to compute P@5, P@10, MAP, and PR curves.",
             "Synonyms": "8 documents with synonym groups (car/automobile/vehicle, big/large/enormous). "
                         "Demonstrates why stemming and vocabulary normalization matter.",
             "Link Structure": "10 documents about web IR topics with a hand-crafted citation graph. "

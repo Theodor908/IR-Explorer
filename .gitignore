@@ -5,3 +5,19 @@ build/
 dist/
 *.spec
 *.exe
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+IR_Explorer_Documentation.pdf
+IR_Explorer_Documentation.tex
+
+# Evaluation results (keep local)
+results/
+
+# Research paper PDFs (copyrighted)
+*.pdf
+!docs/*.pdf

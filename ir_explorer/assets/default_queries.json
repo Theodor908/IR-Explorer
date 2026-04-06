@@ -1,0 +1,76 @@
+{
+  "queries": [
+    {
+      "id": "q1",
+      "text": "neural network deep learning backpropagation training",
+      "relevant": ["d26", "d27", "d28", "d29", "d30", "d31", "d53", "d56"],
+      "description": "Deep learning and neural network training"
+    },
+    {
+      "id": "q2",
+      "text": "transformer self-attention mechanism encoder decoder",
+      "relevant": ["d14", "d15", "d16", "d18"],
+      "description": "Transformer architecture"
+    },
+    {
+      "id": "q3",
+      "text": "language model pre-training fine-tuning NLP",
+      "relevant": ["d14", "d20", "d21", "d22", "d23", "d24", "d25"],
+      "description": "NLP pre-training and language models"
+    },
+    {
+      "id": "q4",
+      "text": "quantum mechanics measurement observation wavefunction",
+      "relevant": ["d4", "d10", "d11", "d12", "d13"],
+      "description": "Quantum physics interpretations"
+    },
+    {
+      "id": "q5",
+      "text": "DNA molecular structure double helix nucleic acid",
+      "relevant": ["d76", "d77", "d78", "d79", "d80"],
+      "description": "DNA structure"
+    },
+    {
+      "id": "q6",
+      "text": "natural selection evolution adaptation species variation",
+      "relevant": ["d41", "d42", "d43", "d44", "d45", "d46"],
+      "description": "Evolutionary biology"
+    },
+    {
+      "id": "q7",
+      "text": "global warming climate change temperature emissions",
+      "relevant": ["d58", "d59", "d60", "d61", "d62", "d63"],
+      "description": "Climate change and global warming"
+    },
+    {
+      "id": "q8",
+      "text": "carbon dioxide atmosphere concentration measurement",
+      "relevant": ["d32", "d33", "d34", "d35", "d58", "d60", "d63"],
+      "description": "Atmospheric CO2 measurement"
+    },
+    {
+      "id": "q9",
+      "text": "information entropy channel capacity coding theorem",
+      "relevant": ["d47", "d48", "d49", "d50", "d51", "d52"],
+      "description": "Information theory"
+    },
+    {
+      "id": "q10",
+      "text": "computing machine intelligence imitation game thinking",
+      "relevant": ["d70", "d71", "d72", "d73", "d74", "d75"],
+      "description": "Artificial intelligence and the Turing test"
+    },
+    {
+      "id": "q11",
+      "text": "relativity time space light electrodynamics",
+      "relevant": ["d64", "d65", "d66", "d67", "d68", "d69"],
+      "description": "Special relativity"
+    },
+    {
+      "id": "q12",
+      "text": "probability uncertainty determinism branching multiverse",
+      "relevant": ["d9", "d13", "d36", "d47", "d50"],
+      "description": "Cross-domain: probability and uncertainty"
+    }
+  ]
+}
