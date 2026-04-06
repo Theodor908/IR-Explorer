@@ -9,6 +9,7 @@ from ir_explorer.ui.theme import (
     FONT, FONT_BOLD, FONT_SMALL, style_canvas
 )
 from ir_explorer.ui.widgets.hint_box import HintBox
+import json
 from ir_explorer.core.retrieval import tfidf_rank
 from ir_explorer.core.evaluation import (
     precision_at_k, average_precision, precision_recall_curve
@@ -23,6 +24,18 @@ class EvalPanel(ttk.Frame):
         self._relevant = set()   # doc_ids marked relevant by user
         self._build_ui()
 
+    def _load_queries_file(self):
+        """Load predefined queries from default_queries.json."""
+        import os
+        queries_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "assets", "default_queries.json"
+        )
+        if not os.path.exists(queries_path):
+            return []
+        with open(queries_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("queries", [])
+
     def _build_ui(self):
         top = ttk.Frame(self)
         top.pack(fill="x", padx=8, pady=(8, 4))
@@ -35,6 +48,28 @@ class EvalPanel(ttk.Frame):
 
         ttk.Button(top, text="Run Query", command=self._run_query).pack(side="left", padx=4)
         ttk.Button(top, text="Compute Metrics", command=self._compute_metrics).pack(side="left", padx=4)
+
+        # Predefined queries row
+        predef_row = ttk.Frame(self)
+        predef_row.pack(fill="x", padx=8, pady=(2, 2))
+
+        ttk.Label(predef_row, text="Predefined:", font=FONT_BOLD).pack(side="left")
+
+        self._predefined_queries = self._load_queries_file()
+        query_labels = ["-- Select --"] + [
+            f"{q['id']}: {q['description']}" for q in self._predefined_queries
+        ]
+        self._predef_var = tk.StringVar(value=query_labels[0])
+        predef_combo = ttk.Combobox(
+            predef_row, textvariable=self._predef_var,
+            values=query_labels, state="readonly", width=50,
+        )
+        predef_combo.pack(side="left", padx=8)
+        predef_combo.bind("<<ComboboxSelected>>", self._on_predef_selected)
+
+        ttk.Button(
+            predef_row, text="Run All Queries", command=self._run_all_predefined
+        ).pack(side="left", padx=4)
 
         self._status_var = tk.StringVar(value="Enter a query and click Run Query.")
         ttk.Label(self, textvariable=self._status_var,
@@ -110,21 +145,38 @@ class EvalPanel(ttk.Frame):
             return
 
         self._relevant.clear()
+
+        # Auto-detect if query matches a predefined query
+        predef_match = None
+        for q in self._predefined_queries:
+            if q["text"].strip() == query:
+                predef_match = q
+                break
+
         results = tfidf_rank(query, self.app.index, self.app.corpus.docs,
                              self.app.pipeline_config)
         self._results = results
+
+        if predef_match:
+            self._relevant = set(predef_match["relevant"])
 
         self._tree.delete(*self._tree.get_children())
         for rank, (doc_id, score) in enumerate(results, 1):
             if score <= 0:
                 continue
             title = self.app.corpus.metadata.get(doc_id, {}).get("title", "")
+            mark = "✓" if doc_id in self._relevant else ""
             self._tree.insert("", "end", iid=doc_id, values=(
-                rank, doc_id, title, f"{score:.4f}", ""
+                rank, doc_id, title, f"{score:.4f}", mark
             ))
 
         n = sum(1 for _, s in results if s > 0)
-        self._status_var.set(f"Retrieved {n} documents.  Click rows to mark relevant.")
+        if predef_match:
+            self._status_var.set(
+                f"Retrieved {n} documents. {len(self._relevant)} relevant docs auto-marked from {predef_match['id']}."
+            )
+        else:
+            self._status_var.set(f"Retrieved {n} documents.  Click rows to mark relevant.")
 
         self._p5_var.set("P@5:  —")
         self._p10_var.set("P@10: —")
@@ -144,6 +196,93 @@ class EvalPanel(ttk.Frame):
             mark = "✓"
         current = self._tree.item(doc_id, "values")
         self._tree.item(doc_id, values=(current[0], current[1], current[2], current[3], mark))
+
+    def _on_predef_selected(self, event=None):
+        """Load selected predefined query: fill search box and mark relevant docs."""
+        sel = self._predef_var.get()
+        if sel.startswith("--"):
+            return
+
+        query_id = sel.split(":")[0].strip()
+        query_data = None
+        for q in self._predefined_queries:
+            if q["id"] == query_id:
+                query_data = q
+                break
+        if not query_data:
+            return
+
+        self._query_var.set(query_data["text"])
+        self._run_query()
+
+        self._relevant = set(query_data["relevant"])
+        for item in self._tree.get_children():
+            current = self._tree.item(item, "values")
+            mark = "✓" if item in self._relevant else ""
+            self._tree.item(item, values=(current[0], current[1], current[2], current[3], mark))
+
+        self._status_var.set(
+            f"Loaded {query_data['id']}: {len(self._relevant)} relevant docs marked. "
+            f"Click 'Compute Metrics' to evaluate."
+        )
+
+    def _run_all_predefined(self):
+        """Run all predefined queries and display summary in a popup."""
+        if not self._predefined_queries:
+            messagebox.showinfo("No Queries", "No predefined queries found.")
+            return
+        if not self.app.index.index:
+            messagebox.showwarning("No Index", "Build the index first (Index tab).")
+            return
+
+        from ir_explorer.core.evaluation import mean_average_precision
+
+        all_results = []
+        map_pairs = []
+        for q in self._predefined_queries:
+            results = tfidf_rank(
+                q["text"], self.app.index, self.app.corpus.docs,
+                self.app.pipeline_config,
+            )
+            retrieved = [doc_id for doc_id, score in results if score > 0]
+            relevant = set(q["relevant"])
+
+            p5 = precision_at_k(retrieved, relevant, 5)
+            p10 = precision_at_k(retrieved, relevant, 10)
+            ap = average_precision(retrieved, relevant)
+            all_results.append((q["id"], q["description"][:30], p5, p10, ap))
+            map_pairs.append((retrieved, relevant))
+
+        map_score = mean_average_precision(map_pairs)
+
+        win = tk.Toplevel(self)
+        win.title("All Queries -- Evaluation Results")
+        win.geometry("700x450")
+        win.configure(bg=BG_DEEP)
+
+        cols = ("id", "description", "p5", "p10", "ap")
+        tree = ttk.Treeview(win, columns=cols, show="headings", height=15)
+        tree.heading("id", text="Query")
+        tree.heading("description", text="Description")
+        tree.heading("p5", text="P@5")
+        tree.heading("p10", text="P@10")
+        tree.heading("ap", text="AP")
+        tree.column("id", width=50, stretch=False)
+        tree.column("description", width=250)
+        tree.column("p5", width=70, stretch=False)
+        tree.column("p10", width=70, stretch=False)
+        tree.column("ap", width=70, stretch=False)
+
+        for qid, desc, p5, p10, ap in all_results:
+            tree.insert("", "end", values=(qid, desc, f"{p5:.4f}", f"{p10:.4f}", f"{ap:.4f}"))
+
+        tree.insert("", "end", values=("", "MAP", "", "", f"{map_score:.4f}"))
+        tree.pack(fill="both", expand=True, padx=8, pady=8)
+
+        ttk.Label(
+            win, text=f"Mean Average Precision (MAP): {map_score:.4f}",
+            font=FONT_BOLD, foreground=ACCENT,
+        ).pack(pady=(0, 8))
 
     def _compute_metrics(self):
         if not self._results:
