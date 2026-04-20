@@ -13,7 +13,9 @@ dist/
 *.toc
 *.synctex.gz
 IR_Explorer_Documentation.pdf
-IR_Explorer_Documentation.tex
+
+# LaTeX source documents (compiled to PDF/DOCX which are the distributed artefacts)
+*.tex
 
 # Evaluation results (keep local)
 results/
